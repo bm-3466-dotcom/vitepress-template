@@ -3,7 +3,7 @@ outline: deep
 title: Lab 3 - Lists and Data Structures
 ---
 
-# Lab 03: Lists and Data Structures
+# Lab 03: Lists and Data 
 
 ## Pull and Update in VS Code
 
