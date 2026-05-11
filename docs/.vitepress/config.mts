@@ -4,7 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Python Programming 2",
   description: "Course and Labs Informations",
-  base: '/Python-Programming-2/',
+  base: '/vitepress-template/',
   head: [
     ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }] // Updated href
   ],
