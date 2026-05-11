@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check Your Marks - CP125</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .input-container {
+      margin-bottom: 20px;
+    }
+    #matric-input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    #matric-input:focus {
+      outline: none;
+      border-color: #42b983;
+    }
+    #check-btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-weight: bold;
+    }
+    #check-btn:hover {
+      background-color: #357abd;
+    }
+    #check-btn:active {
+      background-color: #2a5f99;
+    }
+    #result {
+      margin-top: 20px;
+    }
+    .error {
+      background-color: #fee;
+      border: 1px solid #fcc;
+      color: #c33;
+      padding: 15px;
+      border-radius: 4px;
+    }
+    .marks-display {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 4px;
+    }
+    .marks-display h2 {
+      color: #333;
+      margin-top: 0;
+    }
+    .marks-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .marks-row:last-child {
+      border-bottom: none;
+    }
+    .marks-label {
+      font-weight: 500;
+      color: #666;
+    }
+    .marks-value {
+      font-weight: bold;
+      color: #333;
+    }
+    .total-row {
+      font-size: 1.2em;
+      padding-top: 15px;
+      margin-top: 10px;
+      border-top: 2px solid #42b983;
+    }
+    .total-row .marks-value {
+      color: #42b983;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Check Your Marks</h1>
+    <p class="subtitle">Enter your Matric Number to view your marks</p>
+
+    <div class="input-container">
+      <input
+        type="text"
+        id="matric-input"
+        placeholder="Enter your Matric Number (e.g., MC1234567890)"
+      />
+    </div>
+
+    <button id="check-btn">Check Marks</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // Embedded encrypted marks data
+    const encryptedData = {
+  "records": [
+    {
+      "id": "b060251bff8153860146e307d6a65a377477872e475378f69b49048b95e0dd4d",
+      "data": "LtNOta9V2iOjjOS8JONUBiWgxfoml9CHA380YTg1xBEHaFe/lPiH5y+OwxhLFH6TVeRvuOKYplK6Fvz+dgjmPpDm/fLvjC0gCYDL1VbF8cXKB/X1NmT3T7i1ORa9rrHnc2ThEb6cDtOmfoBJ+2rvxFob0f1mpoqz11iwsPmLQR2OxbF0Dwq/SuNXuYYOnuZChxEAxLpx86oH80/MaDSuJ7+YbGHulFHLaiDLuBobATPD+cnHBycjzC4tvDCMh2gE8s7dgSGap9vZvGk/hUsIRGhtWSLsrrMR8ffOcTfaN5Q=",
+      "hash": "c59ec7cc4db63ff164706e6d2d8632213c6e9fd701c74356aa044927d439d6c7"
+    },
+    {
+      "id": "cd9049e5dfeec6cf68d847309428db11994531d95dbaf9825d61332430e30214",
+      "data": "u9sa8VULSN7P002NrYC4GI5Zdu1qpJBMkuvmUnGu62Dd6qeocJnyI4+AShSWRxkxIddiyV2/jlzvUCTVvfT1Vczr1/+vDQ/LgzePv0Xfa8gAmNDlyD0E/HlDiWxJba4dAE/MiYzZ0dBjA2KpRDrgDJ0F4EmmcIh9VaSED0Wjr188jrfE6weidyDDv++vQ1W0peGI173zJGlFgZoSZmc2jG8srRV49LBpJ+dnz+asQmKmOJwRg8YTkAFwQN0LtTAySDounL1ZIWtqSpgFlQLn3z/gXu3U+QRfMZV63VgLXpmbPT4Lvna6v0u5oKoaesD0",
+      "hash": "950034b7925f66b098246bbbd64b730e7f1436b0069e88fafb6c1ad7ba303a3d"
+    },
+    {
+      "id": "f8ab27ee78fe29f7b89a5776c44ae9b87fa045156419adef0f9e893f8d233d92",
+      "data": "KL0MyfGT9YrIJyAU7J7eujf/PKgWMfs6viP/5u5TXFv1oOgAnVoVQCP8D9jqNuGss0asoQqF/XQo5Lxuy0QZEsVdOR/N33Z6FkJRwhVykudrkpXIf2AxslZ/TStMzxD0Zb27kSMAdG6v2Qfe6IlicxHqe1AoilcXK3esqQIQVm2Sf1DI6FEhzlam9g+OCfN6A6kuwBHK+pQ1sOai3KfescuOOCuhtZwk4bYjIxHRIhzMXmFlgJagqlkWx8FlB1ixWenvSTwBiXR+oIfmN4GUrJ4h+HJMHOHScPXFoqx4QkA=",
+      "hash": "8b2ebec77b4d33933758bc7b69e3d437d4d49e50edb4814c6ecded18e70712c4"
+    },
+    {
+      "id": "6fff429ebb229cb93081db6d5b39e833d4f5a145cebecf5fce5362439180b2ec",
+      "data": "M9JzMSnc0i6GQkQH7phKXx+PvekvP6KjCDB1JwMUPn47zxqf29FiqxbdPLXGMu5ec1U2WEX2lz/4Bz85mZuLp/SOOARmLyFLQDSyRf1ou8MqvXztarDV1WdR2UWtBHxTnVUXCoWVbtwtg1+/xLXDvFYT8UF5DJqlCAqdacMBPXh+tkZf/oBRzEwjvU1Zc0pCDhG13RsUXpd+bbT852jd3t/j+10YQw2zPm+Fu32PM2JJo/nDY6WthM31ntYyAtIWXa6ITIQCWg1yNzAk4sYcCmdjJNrjU8eN4bM8e2TWn+7pNiIUeP8rSRTtfQonoXPyaimpOwPBHlUpdRu63PyTGw==",
+      "hash": "ffae29a7d953b9596844fe4692279afb959a220b3b889024bdffea63676e7b20"
+    },
+    {
+      "id": "b45fac78f423a3ea6b630841831eafb1db74356f3af46d25db4b566a34e50a69",
+      "data": "vcUTRLNxruNMYD8WgKH660BHLPOySNFzZ6f1JUo8XZxz0cdLNDUV1lJ0e8DL4Rea5KV7TCA/Fo4NDozVnL07WRpd/8oZElQcQMEEO5xSYi7GLAydLzQGbvMpFVryy3ov15O7iEBY10MEKytpIOPi9wZXN0oEaGt0xps2/rrVuLF6qxQ5KtHrtRFCtA7l0eAXy9I/VvpS7sbbptCe2BgBqivt/eTbWXfSP7uy1KHFoLPCiemp8K+D/3TkpV3i6yxSg0qF6AxFLdLub4d6Uvt4+u1eRDymdVOHb9SHjIiRJ8sR5/UnKfPzddUMSSAYp4wz",
+      "hash": "debfdc4eab429e393fe2bd459178f499da922685fe8ee37fdfab9629b390e2fa"
+    },
+    {
+      "id": "999c869d1bebf07ed2409094fae5da8aaf33ce7ba877e2766916829df2abdb67",
+      "data": "TgCZexBsUZe+qkeV3e92VDr06M+hlQ4kddiU+2WqNJdjyy2rR9EaW5LsWb1IzV9BDTrF9VDPiIVCuFracwPOzFixlCpOgbH5ispc/0sNueJ3U4RKjZIW4Qm0hjnsFv/W8B91zay+AWrWDhuFf0F/DsQOM/2I5Zk7rQV05R4WYjEclhcYo9ZWJ1wft77OFdP/SFYZG3WJEfhfy2cSj83JTRzH9rMZbfSXB/1/Iz1aivj51DuGlY4Qr/JM4YMQsBGuyl0pW1Sr7OhwCH1gu3eAZgeb5BXAMSVJJfzv7+bAjzVcioOSQsqyxb2cEs9WZzYD",
+      "hash": "55b38b23080d8d2cf893cc5547eeec1751c0c2895f216ebfe494ea5f83d389cd"
+    },
+    {
+      "id": "45287eec47a97ddc912534b61edd8b8d5f4729fc47fe7218382c1affb0211a76",
+      "data": "6furL0YiORV+tL6sUJ0q4eemXq4vULMn3SQCVwvqgJVhiLyZsHfang2JMVs+A36hGfytWUMba+uCdl3tY44u+Q1rZr5W15/KTVWunShyCSzfiwYaE8m/63Ad/xtu+gE6cFkVFN2OZ9mG3rjLZmpL4AzAzB/u0Hms3hMd+7GAZjhCVgApK1BoRztVHUkGu6916lo4zbmt581cToctRGnA3tBAf24YZOomOvFp6ByBxbfWcmhbynxp38W4Zf+fYvTMorijPjjC67wlQB6gA2jC6r+qbvaWxk/5EQHmtiu+ci8Csg1CXW0f463IYFdN7177",
+      "hash": "38b100b2bde6f3048fe8b021cc0f7d96cb708ea0c7c4461b340734b216b18266"
+    },
+    {
+      "id": "d94a04bdecdd431f500d0e82e3fe8a8636e8a1fca271b3563107b4e155a3b554",
+      "data": "vVhM37CE8ChSs7hmPKzBwAZRX8so5saVk6uEM28JHWMFb896vMmTOt91cM4ginZeZ/pLl27qyORWpGc2bhaVUDOIFa05qEtbINb43ELxuN+3MKSV9LzuyCskHfEdYq9wndFZ43NZLi8aSZXe8gQ+R01wAWXOeFed+eojYgx+sIswVln7fGkZLPe0dxgTbz5o+Y3n33z+XG0aIsomtH7AZxERJDZ27j91x7jeo7knVAU0kjtsShey98eu2szN1CIFIa2KnxxGsCIQFs8COeTVeo9NM00Qt+Dg3nrEL6XHwMSucIMJguuEmfgTY2ASzyuE",
+      "hash": "1c016176b25b369b5df16b9207e1e0ed989954749cad77d109cb603d60804e10"
+    },
+    {
+      "id": "3f76105a8c0f3757c179b01802d11b19538e16919203e8c873093ee25d789259",
+      "data": "uRb0SJgIk/N+uXj4rrdpb/HPTnPeNXLDbq/9f+TNOOcCr4lj1vmJ0QpuQiZfOHIvH7hj386Rhlr3UDLrIKCYpHKqu7oPpDKc3ANvsXXCT7zjoZeCSxKijQXLKgvxHKAVZhfPT7yBygcMLqoy6GQZh2mbsTRUH4YI+UP6rRVSRp6Rxmkz3ANqRsKk62kapbm8My/tVy5xhuSY2jXPn4X/IAz6+B7QQqioF4bPcXbd9c1HnjkE+72CN6kqo7f8ysKdO30hnjrIsq1eAKq87eEzV1pinHR3pXk3CBx8E76UICqyHLpnrDd2aYhKrZaDCQSw",
+      "hash": "7b1bc2d294de1f3b560b58cbfee0286772ef59f9e091476315cc91dd6095a52d"
+    },
+    {
+      "id": "ee1c2e4521b93d4361728ea42499c567eb3c827ed12afad6fed4a4060b96e38b",
+      "data": "xt43Zol58FERq9VDSlD6ijTMrJEBjcS++gG/TFrCNH9GdF980GGcsoUHSpbtBS23SQ19E0kzXcDuR0OJoErzGrEu70e+5U4HfoxG3Gt8fw/O1xunReNZXvbpbWzcnms1c9XpQxmOcacac895zvRMNyZ4wwQDXfyxzx77DMC0C5jdTaxrQ0ztmKMUOaIWZs8y3m6cFXSBY2YN1RJZjUqDTc+2vIbRgb2tWH2qPvCrtN2lyMxQrs9zICjWgj4y4uMZeaRF+SrPWyr+UIKD4X7t+8YAe5RZ022p8V7F4ZQmQNHp14di7qB/Mavu/O7Wh5pE",
+      "hash": "d58c0a712f7e3550d0ddbcaef3f727056ffab66ab0959c48182c31ae67ab5f8a"
+    },
+    {
+      "id": "e1b6326b0ab0b4e748145d43695c6d22fb0208b713c7319501c7c329bde42de4",
+      "data": "+gs5V6qda1yi2EpVztHd3FmNrD2wlXm9tnJ1Z+vBNgvtQ3CLZRi/82YP8P0zY8BpjGZfeps1jX3iJyD1nrLqv8sRQKwRzX4kqWmjgUNaNWmMcI4fXjCUo/05Lq+wFUbJR+Y3pW903o059r6G2Mo6DEYFoGcEBLzXrw+X+8EacAF2evlbBtPCe8OBibsYqgoQx9tRxyQEDvoBN+kHg6zW+PA90VgMIapmfzbY0HKc2v2A/dyi7zfRtY44DO8PkcM+D3oPapEu9mp/95AYbt5vy4PAZWGIT+pj0zNmttmf7c8=",
+      "hash": "cdc9c79ec418d0727777a34ad0cef9403600c38555bf44477d82efb1ce38e1ed"
+    },
+    {
+      "id": "e9315262d6fd35ecbd67da0cdd997ac29fcd5fe7cb4e402bf212947896df005e",
+      "data": "f1NuAdngh6xUASNpP1Ggc3/wUNrrTkZ4MnAnyouRNanFAyoPnHGpaSJSzrNTUFHeAf/Xe3ehTwQMvmfpsOXoZ/wq4l7fLjTvDuyspsVsDsB0E4BgIYcPq7xD2OSpf455H4xMx7phzIYd9R9qYXB+IWC9RvcL3/hI22CHlnd8snqjboGNzv5ewShUI6XHrNakHX8vCESdpKg28RtlrmG/SsRFqcy4Gr6ap2TgpN3boszxdGsIVOzjl87TP5NRHgbFS5UhmSkhjRVWNJh3f3yWATUaJR+Y1H9tQliVLZduf/Z13xtbZ+uOKsJAcx7AdymL",
+      "hash": "5a2c1a8f069b90bbb4f6f9225e3ef8e931ac2208ffddf85f5e958a7cd36dc171"
+    },
+    {
+      "id": "2dd3093ff6db6b622c5fc9887e8a1d80ad547391f56bec3e9caa26a07030c66e",
+      "data": "xu3OAMkCXjDIc8/TXOX71OFwO024RsUyDINmjyK7pxIHLLriNhdji1IWP4pTT28NwOad+wXzM+2ALvsn4h70cQNiHoSCOMH/J40y+LNrcVsTrIXA33mPZOe8l8lxx+jyeKkbIMzy5T3EDVa9AP07CD6PcdqvBNOx1Xc7xa8ZsYm9J91v1v98Ex+r1UcQtpvqKALeSBvcjI9nchIgOmM4naGy8xF78ZzIfjc4mw1UcNTgBf/J9Dz05TutPMankeym2lPpDJze1UFZxNSMzojr81u2DvkgNGoyJoMGXPVbx0A=",
+      "hash": "e76f1e6f1222c0e52fce81720d8f681c9d91c1aa5f200305437c180b323f2b52"
+    },
+    {
+      "id": "47da7ebe7993bec3c8d866ba8085a32047dfc5234a9da90611d3cb9b21974ceb",
+      "data": "j4v+L2SLzHTLxaG1SD5VtU7LIYqo9o7nbYp04BI0ocWmbg2TNHbEkrRFDDVDEypwoAaNwWsfsacNWdRHo9YU2vlbmTIcNSxONunOBeqTIvnudKpPyuatBefgRxf08VW5PkAdVtgQVNq8dXZ7+yUfuUgVuFRnmAKRuLl9Iy4BTLpe2Wt/v26/ZJ3e7mJgn4fhDEkqZg05KhRLv6N2kxoLv5FEzJs57mXV7T73cax7n1S/nw3C22CqABDESonEfbCTa1X6Fhth9PxmGR9Tmqv7eAbkFeTFi3kjJkeV1NuhLEz4pHD0WMwepwt56ZpNS5Sr",
+      "hash": "9cbbea7148a82525d76d7e9e1b4d3011e69931da128b785b935f7c007e07f0a6"
+    },
+    {
+      "id": "3c556aadb67c0d9dfd82d877e7e053a09fec24969cc2919b50f7221628ca0cee",
+      "data": "38YRzL2MKj6kk5qyeKFGGa3YvxNQB7EjVEK2HpLDkYtsy/zFNtkMa8Y0uiqkl2fRb3MMrGulCqGWrPEypb3He+hQM5QpqjnzzFw2eC0LIndtL5uvKWIiWWjViwF8WOfcZxyGbBI/F+b6xYYGA8aMhGVa4pbViaqLx2Uaoamse9GD8pWIMHwVO4DV4YQs8IBILDOfI072xGyDq1Wa5LOYm6bkfEtGyDAIXfmY6f9wCRPfyXY402i9bW/KzYJtl45w7XjzTfUGkUlQu3J9sZXqpDp8hxjr0gDSju6JMETC+rai3J+Bw5dc2KnTvLwFCzZU",
+      "hash": "edb141248d658842570df78f61c93f6663996c66fa2358c5945db4330f28768b"
+    },
+    {
+      "id": "ef07b78afcec3225ca5658eff50347e0039a4adf67902a59de68b94947dfd13c",
+      "data": "E/A5onS2wA5DsrXYau2AJzw3ff9nSZA6jn0Yq5Qg6LxrejATEe8OnLnX7JstB9pLic9CNkBDyyVp/MV98jb7kSBpVgJdxBusU5e2f3Bx6JiVt/2mMs1J30ddqqqhoDgKmLiQc/HpgxYgOeDWjkt6AX+awGf5XN4LIIy/53DvgfG0tDU9puDP7zlWzK/Ag80wDoQ6DxZ1+8QB6y4EVXK2dtXFDNbULF1EsSHM46QICMn+FKmo3CMI+HZfD4DT6lcwCJfH18qnY9iWTu27M1d8svTgFnhQ6ibV7Rv1TYVToTTObK0gun+uGSVaPfX3VZwE",
+      "hash": "e68cadb23ff02c34e133e7b14682a169986836cdd92fca0fe4893e2a14401dac"
+    },
+    {
+      "id": "56d91b4b7b2945407a4e5eae628714176e4d49f8a7c6d1d063f3cfe4040104a9",
+      "data": "rJsaeeczQvNWGkiu8u8m6uGFAp9pP5NIaMroQzj5rfG4MjxtqdBqx43q6aVNpTYMN7ttOkzS5CRbECwqLRjZOAWeh/mj99CFbEIOzYcb9cE+++cwX/anCi8E7A71nGFD38lPYtmxDu2QFY3ZzhZJDhHkYiuxBQWy20rcCpe9jbqfGEaQyvmUalAifIQAoEWhxHXn7sdPiEAsgr53aotwY6xxSo3Y5iWS+jiT5nuKQY624utG0x5MqFvTJurOR0bnlRt/uzzvu1e8LHTtwzVA9rx3Ry6w76xlDBVkcbobFBw=",
+      "hash": "355c333119b1a8b8204fedaa6c49aefcf59f270229b1b182821d90ef768eff66"
+    },
+    {
+      "id": "5de5d8d959cd091ae5b56c45f160d2e3a817139ee32880fcf252f6d883796811",
+      "data": "OV6cNpHi8Qtv2/zIeImjVSpWbgTp9mzxJA8m3w/LruGtGy8RKK/ONgcwDBxytSuHUFNdQzEXcOKJ+QWW9TDVcTTUZpjXyVFsFI8V0cUfXcwZWOZdLHpzuYH1xoDtbiDeLpMZVzuZtg8jX7r2KI0zTE9prgbxZNAeJlQMvDW5YKColqY0qcMPye63JiZe355+J34dHWtlb0Gvq5LV5bnF6EZR9i7s6eK3gHjNbWDUYVf/HYk+ZAboi4PLouSjJYblwZPkuteEwuJn2eV8C0mTMHeP9EjbDyHiDq1GvdpO9+E=",
+      "hash": "9f113271285563e2e4ea90c06e273dac506b8ffd35b56c2c62b20268800d536f"
+    },
+    {
+      "id": "565559d4973639add23feccfc7e2e0e4b2baf00f1f338648ecde069173e5ead7",
+      "data": "xMX7kEnfUS/DiTtyLDJZFr1lPCKsDDfvaA9kEgU/zidSr3h80mcelGDqqobGCisD8qZTT5GccebUn19QY/3H/xzw8/umu2OX3gu3DQjjd1wgAuM8CaGyQz++yT53aDEWRJhyU08/oCRIGZ5YgbUiTtrwWuJJrsHxmXGN9pG9VVpTQZ4GFOyQ6kTmAVKsuU7iFpoSSDwBYiNqbBnRHyHuPyYj/uFUM74fS92psRvxPXig0rI5ekiMLw/lrFv64dE4gZ5+75mEBI/JDzbtlFH/m7JQzf4EZaBSzfng5xz9my4=",
+      "hash": "56a9855dd23ecadb0bb425c8cd3641ab16876f1293cbb3a539fe23285a0f70d0"
+    },
+    {
+      "id": "86b74940af3e8972d9534dfd2b09a0399bb61519cb4ee0027035ca42b9c65ca6",
+      "data": "ELOGitwXuBr9WoCGkkzC0K9ep4PR2PwazH2WpYw5bcaAc8xFMIqodv5fV5g8/1iq+su9DRkZS6luz7OO2Z7VLT1iaLRisdL+MsI2thdJfuNqyOREm215RQ+cQ12R7HiSdLP/x/fbaPEhyXNsEcA/ILagqk9pwnroRhHxq1cwDKY4H6kVP+ngdWKbAoC9+cyqC9/mxVTCYjuzD1rBCYDaxhZHueAk0e/TwL7UnvQIlvidqJZhva3Ay061cfvTn/zYw+IY4SO8S0tAxWZbYj+iU4wl1R2eTzQvBHA7j5p8f/8IIWQrSLFefhnL90YFqSZB",
+      "hash": "663f087e6fba2ca1e8fd16df12742aaba17ae616b57549dc6801714894f8d188"
+    },
+    {
+      "id": "ce93d1632b18f6058611baf36c354dcac8e380b44acd489121fe75f99a7c9dae",
+      "data": "KqD9haKy2dszuyL/Ph3zuVKa1vOCuJJsM1fYo9A+V0sO2utzrbXYR9rhmeZfKlEcyRdRSNj/+bqwQvxA775OOPaxwg5QRuB7nUtI0NIx6RSoynKNRuN028e09XvbC1Xla/AoPpq6PwpO23KybkSpNpWbdxCpHaNeh6U2fc2bRWrvftN4VapeRzbkEEYGFIm21JrRZQ+9N8Y5L3NUljI4wwIibtGVGq8UXcqFzK94zurWF9UTU08rjvMZGKtl2jQ+yFpGELj0kAPcyK7ZRO2trKhLRCKKBxJdpAmxAbA/jfr85yCL/RnQ5T6No5GaVDfr",
+      "hash": "3f8238d8f00bd42138a8c90e45d29aa879980fb4d61318cb92eab9b433b7b09a"
+    },
+    {
+      "id": "47f6a64abbd8183dec68e3034a688e2976d9b27a31a34aa6d37ff8a1f21b1605",
+      "data": "hIcTrynhNODXDCDD2Ek+3zKY4lNyTRP6qGPFESMXfnciFSCwj8daZjPrQtLFks1yB19soyTFfMol07/gUY3fG9W+8dQhhQ+h1J+xnddGpqbjQ27EM9JaRrU6TBU9jNTi44lCIsZFsjlFQBo5Irzyl0yDv4yHXVB9AIuutflSdtglJwxKQrFj++esyB19y1LQkSVtTYK7PuCoakLPb3GtWWhtdSmR5ROZoKyYQsU1jHJDD/xbS0YdAon60oB8SQGsrg4CmjAoYyk9HMrE0fyVR7uCbCHzWJ6leKFaHQBwIKtUiDeVtsg/LSfs9LXY1ZOV",
+      "hash": "c222f34659426cf70500fca7ea985fed280b365badec8db5ab01e1e2bc5e983b"
+    },
+    {
+      "id": "a94c46ccc86cff2aead3b8f41a6f020f5c212ca4060c705616d6d290cf63cfdc",
+      "data": "W+K92vfwlcjEArN9K7OkECsveLPQmvTTHRk4wT02/rbpnVJc1li6OqKGCB0LlOjgIrd3IHLaaQml45pWH/kGKGookQIwFMJfteRNmfIJcqPnyMTfklVZoMyJZMZL9mdZjBr8NbHkh2tydw4MEMTCqLsAFJphRr4P6P48Wada9wm6KrHkSc6bdy51BVTSzbrlDNSw90CbmmtC7WnrR6/Jbb8NuHYN1xYU/6HDTAQixazYgqWBa5MpiPNk8ZYghQmC3bI0xpd2J0qfs5REzPgodk9zzNpt9uLJdEEQhhOFrhI=",
+      "hash": "bc8f012f635f2c5bf01f18bbe24c5d1dfda3ca08a811a07da0ba4bae8dea682b"
+    },
+    {
+      "id": "262ddeb05cca50675289d944864ab7e23fb0742b6fde2a3c542958fd506d959c",
+      "data": "Nw60ve5lO2hxH8cAvsc0UYV3UFSOXy2DMiS2xG96BZ2vnIbZad9D/AmJeOM58YpoSa5dpDqdqKrv9Q34UzhnuTO4lfb8aMEK1fDWlLu+jHdlXC6AwJjidlCuGR33qHB2kFT9d/u2V6qmb5IinJFIsTA06YrybnpLoLKa7w/FKAnVfOgI0H80eMf6FWWljo906imM1TDPQrLLzBLHuaGKPW/Cm8OQ8M+t+qjQtZ0hDKpOGXh4EIGY1Rtg4BV8tMX6NkG2mrmGKtC3aVZE7f0S/8SmqsqXy6Njuk2QUpeuHMz5AC8btuEtbaTfbwybsBC0X23KH4tFac5sB/yifTESdw==",
+      "hash": "13b60be4138fd0e49c6fbb97f8d3815aefc2424334c374b7e8695dca55c96021"
+    },
+    {
+      "id": "14a92e48547319c466dd326b25198341cc9ab4e390b3bccc3d5b8d7c0545d7b0",
+      "data": "aHHqH95iPyw921UCWVssxJ7m/o2ElIUmw6xwK6l7IKtAN0u3xgD8nVk99Tgej0gcU5IDMGuQqCNBm9aFTsGM0rMaHUJc0goGRvVYIKI0OmyUhmQFD+NCvD7S8o3Dp1wkSGwQG9TsPCVwKa4H6Xw4yi0PC9O5n6Mcsh9+mVgKxhGcMAA+UywXHXlOm/0YRgEbzMc1a9OVWJ1WCLvVBF5kM4Fcxl2hcbJDQw99ffNwU31V35Nt3Zkyf2xTy7Oo/2vKCPbMnMf9/xHg+mwEzoRk1FUtmWA6i2CnqCFnyNww46oIHPOl/KrR8V2eCCVCS7ao",
+      "hash": "6faaadd25f3b45737f0239ee372156816b379e7e1796d8d0ee2adb0622af950a"
+    },
+    {
+      "id": "d78d2fa6ec8cf13b1c4d47ec3e05616b284228e7b3c3da6b63281413b59ef8aa",
+      "data": "lgelqFieoXbtQc/gGqh83bvzJnrghlaI3X4MEFbwO2Z9MA55PnOXpoyGrIJvu3IuT7bTsj7jYWjRjt9onCEVcZdDtEO/t7t6Y8FF7Rl4USc13g77oi6UGOZWd0cZrJxV0sajzV6haJfzCBpMHUscqZAFAog5jmoWGpdG8jmneA5EFRz/0sXc8lGiviEjBJFOBT1yAfQmmjUBIALVo63XCvB1EsySRkJPq8T30CuWO3mvONgFXsJPwxf73hXtON1djz9dfButa6b/I4FdLJKO2ovPGU/A3b64LC6xMymoBEbxgJA+qS0zWbHDyli5JJGp",
+      "hash": "59560cd6501ea3838d1d3705064aa1de91a4f3ec764501e2877a489a5698543b"
+    },
+    {
+      "id": "340f9459da288ca477552e60b80e487da1b56b0fe6f37508eb133770a4a03268",
+      "data": "TqLJi3iogQh+KAK9brhKh7AX1HhKlu3xG+yOZduonKAor/rnMxM8+eMr324xHRuyfrcMs5/UcYYowMh5zKV7ltMeGBO1TBNeTQTWiNXt4Apu3MmFz5YT0hlE9VeC+dRRiff7lNlqK1/XvhwiUBqs/TNfVk9sbwddcIryoYpqS/5Z/54xYkdQpCM8WTqLAmi47IsQtmRFaCcn57DdeeVtwx5AVtS/yMGo42+iQviyfrXfe/jPj1aLZ3M+OWNW7elKhQkHIJ5hGA1aHcKFTis2QJA9zy6Tel0YrYCVYYrg9jJwI3G4b7auOEMNlDdaNISz7iTYt+gCLKdYgtO7bcB+tg==",
+      "hash": "ec067dde2d4acda9867202bc13882ef5426f002bf8234e243b704a5e13f20db7"
+    },
+    {
+      "id": "44008f9649e2588bc3c37b0cb761d7916fc05f20a53d204202a8a172f0ce5a08",
+      "data": "I5GXffvaBUdu3CTkxkEp+9OIK8UoHP5Vkywge7lzNmtFEYqqofKc3+M4jktQ5PnoJrA4YBNVd3/UR6AkIZ51l+Z4pj7hni0OY9uK//I9O9JcJ3nOvhsc/TwYOActbfEeKay79C7B0mn39HGloathCelmIcX9XV7207W9/8XlgCSBfQWpzdqqsKhl0Mpa9j0Jtltoye6qovElxAOljESMxwA5DSpQnhrEqJhwwM+EL7P2uH9wXuquyGq3k+N8ft/Dq9O1utBWRe3zr1PG/WnXyW38J9zZZjDAjDNFtN5hQRA=",
+      "hash": "a8ff1f3b627de44c5f61c4c86c4835fd27a0d375ae1c411b4c10492a08d31e09"
+    },
+    {
+      "id": "d55913efb03e6dd68d4c6d682324de5bd60194f5779abdab9fe511d98d7046bf",
+      "data": "lB/zbXSkBiZhUTUMs1lazvyFYrMmp++Eoo0OmUROyTCMkJ4PDFODXvQWGX2hALhUcumEkW5jsL5oik9npQNxVyHI3Zo3bFM3990fXjm9NEoUgdX8sMyhXLljAowubRzxR+sbG4IFMLHmUw5WpuK3CbCMRycSkTO/ThxKL37lPNhamYzzq7xoSQFM9mIhFRJGEORjTuT9fROX+2MN/vU7Swj/PUMNf/3NNDZteBGSIkupCBxs1iiqUfDBq8IIakCoXvKkbr/tT5kUaLM0qNEnGfYEYvBNZ4KwZymuB3NBIl9bK7JiW2B86tADIkwcGIopdzQVBNDRIFg2YHo/2JSHSw==",
+      "hash": "5b3a29bc5da567f95b66c1ec915ca15027ffac621f4116ffb515e70f3c6b550e"
+    },
+    {
+      "id": "dce4a2d383983da39094a6f038ac2862adef833af2a8276a35690171e85743b9",
+      "data": "1gL78/4+Jj7G9W060Ngber15X36iMig/kq1CkJq1Kq2xMXUcFUJBpyCYwz+e5oaArZiTiGqZ7xFsvpxYUe6HBZzxuvVH0ac9HoY5dvTSLM5nVDUpRXJVBzrUyxmMQ0sF4pDBQjiSWIAzN5hfW5CklGdC38N8Iu3rq3/OsUyOcp3gClUw0tieLhtdgxXgt96DAzlHj+ofHtcCLt/HwYPsjv4vggy/LnWfMGpjYXk6WIu2Vo6mgoiCfjJyHbF60ZOnu/9/BdCiHnsRHfUmHZlQQ5undwzdZc0q9irsx6RKvK0sAgwltpIjCIktv1oDDecm",
+      "hash": "77f31318049a3d1f7e33a0ead88d34885356b94b482717e10ee513dedf9d6a60"
+    }
+  ],
+  "total": 30,
+  "generated": "2024-03-17"
+};
+
+    console.log(`Loaded ${encryptedData.total} encrypted student records`);
+
+    // PBKDF2 configuration (must match Python script)
+    const SALT = CryptoJS.enc.Utf8.parse('cp125_marks_2024');
+    const ITERATIONS = 100000;
+    const KEY_SIZE = 256 / 32; // 32 bytes for AES-256
+
+    function sha256Hash(text) {
+      return CryptoJS.SHA256(text).toString();
+    }
+
+    function deriveKey(password) {
+      return CryptoJS.PBKDF2(password, SALT, {
+        keySize: KEY_SIZE,
+        iterations: ITERATIONS,
+        hasher: CryptoJS.algo.SHA256
+      });
+    }
+
+    function decryptData(encryptedBase64, password) {
+      try {
+        // Decode base64
+        const encryptedBytes = CryptoJS.enc.Base64.parse(encryptedBase64);
+
+        // Extract IV (first 16 bytes = 4 words) and ciphertext
+        const ivWordArray = CryptoJS.lib.WordArray.create(encryptedBytes.words.slice(0, 4), 16);
+        const ciphertextWordArray = CryptoJS.lib.WordArray.create(encryptedBytes.words.slice(4), encryptedBytes.sigBytes - 16);
+
+        // Derive key from password
+        const key = deriveKey(password);
+
+        // Decrypt using AES-CBC
+        const decrypted = CryptoJS.AES.decrypt(
+          { ciphertext: ciphertextWordArray },
+          key,
+          {
+            iv: ivWordArray,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+          }
+        );
+
+        // Convert to UTF-8 string
+        const result = decrypted.toString(CryptoJS.enc.Utf8);
+        if (!result) {
+          return null;
+        }
+        return result;
+      } catch (e) {
+        console.error('Failed:', e);
+        return null;
+      }
+    }
+
+    function displayError(message) {
+      document.getElementById('result').innerHTML = `<div class="error">${message}</div>`;
+    }
+
+    function displayMarks(marksData) {
+      const html = `
+        <div class="marks-display">
+          <h2>${marksData.name}</h2>
+          <div class="marks-row">
+            <span class="marks-label">Matric Number:</span>
+            <span class="marks-value">${marksData.matric}</span>
+          </div>
+          <div class="marks-row">
+            <span class="marks-label">Class:</span>
+            <span class="marks-value">${marksData.class}</span>
+          </div>
+          <div class="marks-row">
+            <span class="marks-label">Lab Test 1 (10%):</span>
+            <span class="marks-value">${marksData.lt1} / 20</span>
+          </div>
+          <div class="marks-row">
+            <span class="marks-label">Lab Test 2 (10%):</span>
+            <span class="marks-value">${marksData.lt2} / 20</span>
+          </div>
+          <div class="marks-row">
+            <span class="marks-label">Lab Test 3 (15%):</span>
+            <span class="marks-value">${marksData.lt3} / 20</span>
+          </div>
+          <div class="marks-row">
+            <span class="marks-label">Assignment (15%):</span>
+            <span class="marks-value">${marksData.assignment} / 24</span>
+          </div>
+          <div class="marks-row">
+            <span class="marks-label">Total Raw:</span>
+            <span class="marks-value">${marksData.total_raw} / 84</span>
+          </div>
+          <div class="marks-row total-row">
+            <span class="marks-label">Total Percentage:</span>
+            <span class="marks-value">${marksData.total_percent} / 50</span>
+          </div>
+        </div>
+      `;
+      document.getElementById('result').innerHTML = html;
+    }
+
+    function checkMarks() {
+      const matricInput = document.getElementById('matric-input').value.trim();
+
+      if (!matricInput) {
+        displayError('Please enter your matric number.');
+        return;
+      }
+
+      // Hash the matric number to find the record
+      const matricHash = sha256Hash(matricInput);
+
+      // Find matching record
+      const record = encryptedData.records.find(r => r.id === matricHash);
+
+      if (!record) {
+        displayError('Invalid matric number. Please check and try again.');
+        return;
+      }
+
+      // Decrypt the data
+      const decryptedJson = decryptData(record.data, matricInput);
+
+      if (!decryptedJson) {
+        displayError('Decryption failed. Invalid matric number.');
+        return;
+      }
+
+      // Parse JSON
+      let marksData;
+      try {
+        marksData = JSON.parse(decryptedJson);
+      } catch (e) {
+        displayError('Invalid data format. Please contact your lecturer.');
+        return;
+      }
+
+      // Verify hash
+      const dataHash = sha256Hash(decryptedJson);
+      if (dataHash !== record.hash) {
+        displayError('Data verification failed. Invalid matric number.');
+        return;
+      }
+
+      // Display marks
+      displayMarks(marksData);
+    }
+
+    // Event listeners
+    document.getElementById('check-btn').addEventListener('click', checkMarks);
+    document.getElementById('matric-input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        checkMarks();
+      }
+    });
+  </script>
+</body>
+</html>
