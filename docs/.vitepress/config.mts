@@ -17,7 +17,7 @@ export default defineConfig({
         link: '/'
       },
       {
-        text: 'Assessments',
+        text: 'Lab Report',
         items: [
           { text: 'Lab Test 1', link: '/assessments/lab-test-1' },
           { text: 'Lab Test 2', link: '/assessments/lab-test-2' },
@@ -120,7 +120,7 @@ export default defineConfig({
         },
         {
           text: 'Lab 1',
-          link: '/labs/lab-01'
+          link: '/test/lab-01'
         },
         {
           text: 'Lab 2',

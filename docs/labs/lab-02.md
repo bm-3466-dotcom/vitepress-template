@@ -56,7 +56,7 @@ Run this code. It works, but notice how you're repeating the exact same formula 
 
 Now imagine the government changes SST from 6% to 8%. You'd need to find and change `0.06` in 3 different places. With 100 customers, you'd need to change it 100 times. If you miss even one, your calculations would be wrong.
 
-::: warning PROBLEM
+::: danger PROBLEM
 Repetitive code creates maintenance problems. Every change must be made multiple times, and missing even one creates bugs.
 :::
 

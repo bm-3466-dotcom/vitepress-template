@@ -9,6 +9,8 @@ title: Lab 1 - Set Up Your Development Environment and Revision
 
 This lab walks you through setting up **Git** and **VS Code**, then using their graphical interfaces to manage the `class-cp125-repo` on **GitHub**.
 
+---
+
 ## Install Git and VS Code
 
 - Follow the [**Git** installation guide](/labs/installation#git) for details on downloading and configuring **Git**.
@@ -19,14 +21,14 @@ This lab walks you through setting up **Git** and **VS Code**, then using their 
 
 
 <p align="center">
-    <img src="/labs/lab-01/lab-1-1.png" alt="drawing" width="400"/>
+    <img src="/labs/lab-01/lab-1-1.png" alt="drawing" width="700"/>
 </p>
 
 
 
     
 
-## Forking the Repository
+### Forking the Repository
 
 When you fork a repository on **GitHub**, you create a fully independent copy under your own account. The original owner keeps their version; you now control yours and can set permissions, open issues, or adjust settings without affecting the source project.
 

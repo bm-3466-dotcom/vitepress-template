@@ -9,9 +9,6 @@ outline: deep
 <br>
 <br>
 
-
-
-
 <iframe src="./chapter-01.pdf" width="100%" height="400" allowfullscreen></iframe>
 
 <br>
