@@ -6,7 +6,7 @@ This document defines the standards for writing labs. Follow these rules to ensu
 
 ## 1. Required Sections (In Order)
 
-Every lab **must** include these sections in this eact order:
+Every lab **must** include these sections in tis eact order:
 
 1.  **Title & Frontmatter**
     ```yaml
